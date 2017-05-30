@@ -60,6 +60,8 @@ int pixPerStep;
 float t = 0;
 // buffer of pixel colors
 color[] buf;
+// previous band value
+int[] prevBand;
 
 /////////////////////////////////////////////////////////
 // GLOBAL UTILITY VARIABLES /////////////////////////////
@@ -111,6 +113,7 @@ void setup() {
   val1 = new float[numPixels];
   val2 = new float[numPixels];
   buf = new color[numPixels];
+  prevBand = new int[numPixels];
   for( int i = 0 ; i < numPixels ; i++ ) {
     int x = tx.get(i);
     int y = ty.get(i);
@@ -127,6 +130,7 @@ void setup() {
     posX[i] = r*cos(a);
     posY[i] = r*sin(a);
     buf[i] = color(0, 0, 0);
+    prevBand[i] = numBands;
     val0[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t );
     val1[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t + dt );
   }
@@ -145,20 +149,25 @@ void draw() {
       float f = lerp( val0[i] , val1[i] , float(stepCounter)*oneOverNumSteps ) ;
       color c = color(0);
       
+      int newBand = numBands;
       for( int b = 0 ; b < numBands ; b++ ) {
         if ( f > bandStart[b] && f < bandStart[b] + bandWidth ) {
           c = color(255,255,255);
+          newBand = b;
         }
       }
-      pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
-      pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
-      pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
-      pixels[ (halfWidth-x) + (halfHeight-y)*width ] = c;
-      if ( x < halfHeight ) {
-        pixels[ (halfWidth+y) + (halfHeight+x)*width ] = c;
-        pixels[ (halfWidth+y) + (halfHeight-x)*width ] = c;
-        pixels[ (halfWidth-y) + (halfHeight+x)*width ] = c;
-        pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
+      if( newBand != prevBand[i] ) {
+        prevBand[i] = newBand;
+        pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
+        pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
+        pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
+        pixels[ (halfWidth-x) + (halfHeight-y)*width ] = c;
+        if ( x < halfHeight ) {
+          pixels[ (halfWidth+y) + (halfHeight+x)*width ] = c;
+          pixels[ (halfWidth+y) + (halfHeight-x)*width ] = c;
+          pixels[ (halfWidth-y) + (halfHeight+x)*width ] = c;
+          pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
+        }
       }
   }
   updatePixels();
