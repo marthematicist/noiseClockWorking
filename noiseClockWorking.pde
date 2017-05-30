@@ -4,6 +4,7 @@ int numSpokes = 12;
 float ang;
 // number of steps (frames) to build future pixel values
 int numSteps = 20;
+float oneOverNumSteps;
 // background speed control
 float dt = 0.1;
 // background detain control
@@ -13,6 +14,7 @@ float alpha = 0.5;
 
 float[] bandStart = { 0.2 , 0.25 , 0.4 , 0.45 , 0.6 , 0.65 , 0.8 , 0.85 };
 float bandWidth = 0.01;
+int numBands;
 
 /////////////////////////////////////////////////////////
 // CLOCK SETTINGS (all in pixels) /////////////
@@ -81,6 +83,8 @@ void setup() {
   
   // set angle between spokes
   ang = 2*PI/float(numSpokes);
+  numBands = bandStart.length;
+  oneOverNumSteps = 1/float(numSteps);
   
   // build IntLists of pixel values from 0-45 degrees and not in clock radius
   // also, determine how many pixels are to be rendered
@@ -138,12 +142,12 @@ void draw() {
       int x = pixelX[i];
       int y = pixelY[i];
       
-      float f = lerp( val0[i] , val1[i] , float(stepCounter)/float(numSteps) ) ;
+      float f = lerp( val0[i] , val1[i] , float(stepCounter)*oneOverNumSteps ) ;
       color c = color(0);
       
-      for( int b = 0 ; b < bandStart.length ; b++ ) {
+      for( int b = 0 ; b < numBands ; b++ ) {
         if ( f > bandStart[b] && f < bandStart[b] + bandWidth ) {
-          c = lerpColor( buf[i], color(255, 255, 255), alpha );
+          c = color(255,255,255);
         }
       }
       pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
