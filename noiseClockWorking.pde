@@ -11,11 +11,11 @@ float bgDetail = 0.012;
 // background alpha setting [0,1]
 float alpha = 0.5;
 
-float[] bandStart = { 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.7 , 0.8 , 0.9 };
+float[] bandStart = { 0.2 , 0.25 , 0.4 , 0.45 , 0.6 , 0.65 , 0.8 , 0.85 };
 float bandWidth = 0.01;
 
 /////////////////////////////////////////////////////////
-// CLOCK SETTINGS (all multiples of height) /////////////
+// CLOCK SETTINGS (all in pixels) /////////////
 /////////////////////////////////////////////////////////
 // clock radius
 float clockRadius = 120;
@@ -30,6 +30,8 @@ float minuteWidth = 8;
 float minuteLength = 112;
 // length of back end of hands
 float backEnd = 20;
+// time of next second
+int nextSecond = 1000;
 
 /////////////////////////////////////////////////////////
 // BACKGROUND GLOBAL VARIABLES //////////////////////////
@@ -56,9 +58,6 @@ int pixPerStep;
 float t = 0;
 // buffer of pixel colors
 color[] buf;
-// black level counter for all pixels
-int[] blackCounter;
-int blackTimeOut = 80;
 
 /////////////////////////////////////////////////////////
 // GLOBAL UTILITY VARIABLES /////////////////////////////
@@ -108,7 +107,6 @@ void setup() {
   val1 = new float[numPixels];
   val2 = new float[numPixels];
   buf = new color[numPixels];
-  blackCounter = new int[numPixels];
   for( int i = 0 ; i < numPixels ; i++ ) {
     int x = tx.get(i);
     int y = ty.get(i);
@@ -124,7 +122,6 @@ void setup() {
     float r = v.mag();
     posX[i] = r*cos(a);
     posY[i] = r*sin(a);
-    blackCounter[i] = 0;
     buf[i] = color(0, 0, 0);
     val0[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t );
     val1[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t + dt );
@@ -144,23 +141,11 @@ void draw() {
       float f = lerp( val0[i] , val1[i] , float(stepCounter)/float(numSteps) ) ;
       color c = color(0);
       
-      boolean colored = false;
       for( int b = 0 ; b < bandStart.length ; b++ ) {
         if ( f > bandStart[b] && f < bandStart[b] + bandWidth ) {
           c = lerpColor( buf[i], color(255, 255, 255), alpha );
-          blackCounter[i] = 0;
-          colored = true;
         }
       }
-      if( !colored ) {
-        if (blackCounter[i] < blackTimeOut ) {
-          c = lerpColor( buf[i], color(0, 0, 0), alpha );
-          blackCounter[i]++;
-        } else { 
-          c = color( 0, 0, 0 );
-        }
-      }
-      buf[i] = c;
       pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
       pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
       pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
@@ -175,7 +160,6 @@ void draw() {
   updatePixels();
   
   for( int i = stepCounter*pixPerStep ; i <  (stepCounter+1)*pixPerStep && i < numPixels ; i++ ) {
-    float t2 = t + dt;
     val2[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t + dt );
   }
   
@@ -190,24 +174,26 @@ void draw() {
   }
   
   // clock stuff
-  fill(0,0,0);
-  ellipse( 0.5*width , 0.5*height , 2*clockRadius , 2*clockRadius );
-  float minAng = TWO_PI * (float(minute())+float(second())/60)/60;
-  float hourAng = TWO_PI * (float(hour()%12)+float(minute())/60)/12;
-  translate( 0.5*width, 0.5*height );
-  stroke( 255, 255, 255, 255 );
-  fill(0,0,0,128);
-  strokeWeight(clockStrokeWeight);
-  float cr = 4;
-  pushMatrix();
-  rotate( PI+minAng );
-  rect( -0.5*minuteWidth, -backEnd, minuteWidth, minuteLength + backEnd, cornerRadius, cornerRadius, cornerRadius, cornerRadius );
-  popMatrix();
-  pushMatrix();
-  rotate( PI+hourAng );
-  rect( -0.5*hourWidth, -backEnd, hourWidth, hourLength + backEnd , cornerRadius, cornerRadius, cornerRadius, cornerRadius );
-  popMatrix();
-  noStroke();
+  if( millis() > nextSecond ) {
+    nextSecond += 1000;
+    fill(0,0,0);
+    ellipse( 0.5*width , 0.5*height , 2*clockRadius , 2*clockRadius );
+    float minAng = TWO_PI * (float(minute())+float(second())/60)/60;
+    float hourAng = TWO_PI * (float(hour()%12)+float(minute())/60)/12;
+    translate( 0.5*width, 0.5*height );
+    stroke( 255, 255, 255, 255 );
+    fill(0,0,0,128);
+    strokeWeight(clockStrokeWeight);
+    pushMatrix();
+    rotate( PI+minAng );
+    rect( -0.5*minuteWidth, -backEnd, minuteWidth, minuteLength + backEnd, cornerRadius, cornerRadius, cornerRadius, cornerRadius );
+    popMatrix();
+    pushMatrix();
+    rotate( PI+hourAng );
+    rect( -0.5*hourWidth, -backEnd, hourWidth, hourLength + backEnd , cornerRadius, cornerRadius, cornerRadius, cornerRadius );
+    popMatrix();
+    noStroke();
+  }
   
   // display framerate periodically
   if ( frameCount%25 == 0 ) {
