@@ -6,13 +6,15 @@ float ang;
 int numSteps = 20;
 float oneOverNumSteps;
 // background speed control
-float dt = 0.1;
+float dt = 0.025;
 // background detain control
-float bgDetail = 0.012;
+float bgDetail = 0.008;
 // background alpha setting [0,1]
 float alpha = 0.5;
 
-float[] bandStart = { 0.2 , 0.25 , 0.4 , 0.45 , 0.6 , 0.65 , 0.8 , 0.85 };
+float[] bandStart = { 0.2 , 0.23 , 0.26 , 0.4 , 0.43 , 0.46 , 0.6 , 0.63 , 0.66 , 0.8 , 0.83 , 0.86 };
+color[] bandColors;
+boolean colorBands = true;
 float bandWidth = 0.01;
 int numBands;
 
@@ -24,12 +26,12 @@ float clockRadius = 120;
 // corner radius
 float cornerRadius = 4;
 // clock stroke weight
-float clockStrokeWeight = 2;
+float clockStrokeWeight = 3;
 // hand lengths/widths
-float hourWidth = 8;
+float hourWidth = 9;
 float hourLength = 80;
 float minuteWidth = 8;
-float minuteLength = 112;
+float minuteLength = 110;
 // length of back end of hands
 float backEnd = 20;
 // time of next second
@@ -77,16 +79,26 @@ int mousePressTime = 0;
 int mousePressTimeOut = 4000;
 
 void setup() {
+  frameRate( 25 );
   size( 800 , 480 );
   halfWidth = width / 2;
   halfHeight = height / 2;
   noStroke();
   background(0);
   
-  // set angle between spokes
+  
+  
+  // utility variables
   ang = 2*PI/float(numSpokes);
   numBands = bandStart.length;
   oneOverNumSteps = 1/float(numSteps);
+  
+  // set band colors
+  bandColors = new color[numBands];
+  for( int i = 0 ; i < numBands ; i++ ) {
+    float h = 120+360*( float(i) / float(numBands) );
+    bandColors[i] = hsbColor( h , 0.75 , 1 );
+  }
   
   // build IntLists of pixel values from 0-45 degrees and not in clock radius
   // also, determine how many pixels are to be rendered
@@ -142,7 +154,37 @@ void draw() {
   // load pixels for rendering
   loadPixels();
   
-  for ( int i = 0; i < numPixels; i++ ) {
+  if( colorBands ) {
+    for ( int i = 0; i < numPixels; i++ ) {
+      int x = pixelX[i];
+      int y = pixelY[i];
+      
+      float f = lerp( val0[i] , val1[i] , float(stepCounter)*oneOverNumSteps ) ;
+      color c = color(0);
+      
+      int newBand = numBands;
+      for( int b = 0 ; b < numBands ; b++ ) {
+        if ( f > bandStart[b] && f < bandStart[b] + bandWidth ) {
+          c = bandColors[b];
+          newBand = b;
+        }
+      }
+      if( newBand != prevBand[i] ) {
+        prevBand[i] = newBand;
+        pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
+        pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
+        pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
+        pixels[ (halfWidth-x) + (halfHeight-y)*width ] = c;
+        if ( x < halfHeight ) {
+          pixels[ (halfWidth+y) + (halfHeight+x)*width ] = c;
+          pixels[ (halfWidth+y) + (halfHeight-x)*width ] = c;
+          pixels[ (halfWidth-y) + (halfHeight+x)*width ] = c;
+          pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
+        }
+      }
+    }
+  } else {
+    for ( int i = 0; i < numPixels; i++ ) {
       int x = pixelX[i];
       int y = pixelY[i];
       
@@ -169,6 +211,7 @@ void draw() {
           pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
         }
       }
+    }
   }
   updatePixels();
   
@@ -220,8 +263,51 @@ void draw() {
 void mousePressed() {
   mousePressTime = millis();
   mousePressFlag = true;
+  colorBands = !colorBands;
 }
 
 void mouseReleased() {
   mousePressFlag = false;
+}
+
+
+color hsbColor( float h, float s, float b ) {
+  h %= 360;
+  float c = b*s;
+  float x = c*( 1 - abs( (h/60) % 2 - 1 ) );
+  float m = b - c;
+  float rp = 0;
+  float gp = 0;
+  float bp = 0;
+  if ( 0 <= h && h < 60 ) {
+    rp = c;  
+    gp = x;  
+    bp = 0;
+  }
+  if ( 60 <= h && h < 120 ) {
+    rp = x;  
+    gp = c;  
+    bp = 0;
+  }
+  if ( 120 <= h && h < 180 ) {
+    rp = 0;  
+    gp = c;  
+    bp = x;
+  }
+  if ( 180 <= h && h < 240 ) {
+    rp = 0;  
+    gp = x;  
+    bp = c;
+  }
+  if ( 240 <= h && h < 300 ) {
+    rp = x;  
+    gp = 0;  
+    bp = c;
+  }
+  if ( 300 <= h && h < 360 ) {
+    rp = c;  
+    gp = 0;  
+    bp = x;
+  }
+  return color( (rp+m)*255, (gp+m)*255, (bp+m)*255 );
 }
