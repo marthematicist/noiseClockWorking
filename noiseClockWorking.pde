@@ -6,15 +6,15 @@ float ang;
 int numSteps = 20;
 float oneOverNumSteps;
 // background speed control
-float dt = 0.025;
+float dt = 0.175;
 // background detain control
-float bgDetail = 0.008;
+float bgDetail = 0.009;
 // background alpha setting [0,1]
 float alpha = 0.5;
 
 float[] bandStart = { 0.2 , 0.23 , 0.26 , 0.4 , 0.43 , 0.46 , 0.6 , 0.63 , 0.66 , 0.8 , 0.83 , 0.86 };
 color[] bandColors;
-boolean colorBands = true;
+boolean colorBands = false;
 float bandWidth = 0.01;
 int numBands;
 
