@@ -143,34 +143,36 @@ ClockSettings applySetup() {
   /////////////////////////////////////////////////////////////
   n = 4;
   CS.Settings[n].bgDetail = 0.025;
-  CS.Settings[n].bgSpeed = 0.275;
-  CS.Settings[n].bgColor = hsbColor( 240, 1, 1);
+  CS.Settings[n].bgSpeed = 0.475;
+  CS.Settings[n].bgColor = hsbColor( 240, 1, 0.52);
   CS.Settings[n].handsStroke = color( 255, 255, 255, 255 );
-  CS.Settings[n].handsFill = color( 255, 255, 255, 128 );
+  CS.Settings[n].handsFill = color( 255, 255, 255, 64 );
   CS.addBand( n, 0.05, 0.05, hsbColor( 180, 1, 1 ) );
-  CS.addBand( n, 0.10, 0.05, hsbColor( 185, 1, 1 ) );
-  CS.addBand( n, 0.15, 0.05, hsbColor( 190, 1, 1 ) );
-  CS.addBand( n, 0.20, 0.05, hsbColor( 195, 1, 1 ) );
-  CS.addBand( n, 0.25, 0.05, hsbColor( 200, 1, 1 ) );
-  CS.addBand( n, 0.30, 0.05, hsbColor( 205, 1, 1 ) );
-  CS.addBand( n, 0.35, 0.05, hsbColor( 210, 1, 1 ) );
-  CS.addBand( n, 0.40, 0.05, hsbColor( 215, 1, 1 ) );
-  CS.addBand( n, 0.45, 0.05, hsbColor( 220, 1, 1 ) );
-  CS.addBand( n, 0.50, 0.05, hsbColor( 225, 1, 1 ) );
-  CS.addBand( n, 0.55, 0.05, hsbColor( 230, 1, 1 ) );
-  CS.addBand( n, 0.60, 0.05, hsbColor( 235, 1, 1 ) );
-  CS.addBand( n, 0.65, 0.05, hsbColor( 240, 1, 1 ) );
-  CS.addBand( n, 0.70, 0.05, hsbColor( 245, 1, 1 ) );
-  CS.addBand( n, 0.75, 0.05, hsbColor( 250, 1, 1 ) );
-  CS.addBand( n, 0.80, 0.05, hsbColor( 255, 1, 1 ) );
-  CS.addBand( n, 0.85, 0.05, hsbColor( 260, 1, 1 ) );
-  CS.addBand( n, 0.90, 0.05, hsbColor( 265, 1, 1 ) );
-  CS.addBand( n, 0.95, 0.05, hsbColor( 270, 1, 1 ) );
+  CS.addBand( n, 0.10, 0.05, hsbColor( 185, 1, 0.96 ) );
+  CS.addBand( n, 0.15, 0.05, hsbColor( 190, 1, 0.92 ) );
+  CS.addBand( n, 0.20, 0.05, hsbColor( 195, 1, 0.88 ) );
+  CS.addBand( n, 0.25, 0.05, hsbColor( 200, 1, 0.84 ) );
+  CS.addBand( n, 0.30, 0.05, hsbColor( 205, 1, 0.80 ) );
+  CS.addBand( n, 0.35, 0.05, hsbColor( 210, 1, 0.76 ) );
+  CS.addBand( n, 0.40, 0.05, hsbColor( 215, 1, 0.72 ) );
+  CS.addBand( n, 0.45, 0.05, hsbColor( 220, 1, 0.68 ) );
+  CS.addBand( n, 0.50, 0.05, hsbColor( 225, 1, 0.64 ) );
+  CS.addBand( n, 0.55, 0.05, hsbColor( 230, 1, 0.60 ) );
+  CS.addBand( n, 0.60, 0.05, hsbColor( 235, 1, 0.56 ) );
+  CS.addBand( n, 0.65, 0.05, hsbColor( 240, 1, 0.52 ) );
+  CS.addBand( n, 0.70, 0.05, hsbColor( 245, 1, 0.48 ) );
+  CS.addBand( n, 0.75, 0.05, hsbColor( 250, 1, 0.44 ) );
+  CS.addBand( n, 0.80, 0.05, hsbColor( 255, 1, 0.40 ) );
+  CS.addBand( n, 0.85, 0.05, hsbColor( 260, 1, 0.36 ) );
+  CS.addBand( n, 0.90, 0.05, hsbColor( 265, 1, 0.32 ) );
+  CS.addBand( n, 0.95, 0.05, hsbColor( 270, 1, 0.28 ) );
   
   // Cleaning up...
   CS.updateSettings();
   return CS;
 }
+
+
 
 
 
