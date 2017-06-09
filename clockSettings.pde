@@ -220,11 +220,26 @@ class ClockSettings {
 
   int whichBand( float f ) {
     int output = numBands;
+    boolean done = false;
+    int i = 0;
+    while( !done ) {
+      if ( Settings[currentSetting].isInBand( i, f ) ) {
+        output = i;
+        done = true;
+      } else {
+        i++;
+        if( i >= numBands ) {
+          done = true;
+        }
+      }
+    }
+    /*
     for ( int i = 0; i < numBands; i++ ) {
       if ( Settings[currentSetting].isInBand( i, f ) ) {
         output = i;
       }
     }
+    */
     return output;
   }
 
