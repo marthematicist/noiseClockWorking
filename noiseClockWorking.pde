@@ -5,22 +5,11 @@ float ang;
 // number of steps (frames) to build future pixel values
 int numSteps = 20;
 float oneOverNumSteps;
-// background speed control
-float dt = 0.175;
-// background detain control
-float bgDetail = 0.009;
-// background alpha setting [0,1]
-float alpha = 0.5;
-
-float[] bandStart = { 0.2 , 0.23 , 0.26 , 0.4 , 0.43 , 0.46 , 0.6 , 0.63 , 0.66 , 0.8 , 0.83 , 0.86 };
-color[] bandColors;
-boolean colorBands = false;
-float bandWidth = 0.01;
-int numBands;
 
 /////////////////////////////////////////////////////////
 // CLOCK SETTINGS (all in pixels) /////////////
 /////////////////////////////////////////////////////////
+ClockSettings C;
 // clock radius
 float clockRadius = 120;
 // corner radius
@@ -86,19 +75,13 @@ void setup() {
   noStroke();
   background(0);
   
-  
+  C = applySetup();
   
   // utility variables
   ang = 2*PI/float(numSpokes);
-  numBands = bandStart.length;
   oneOverNumSteps = 1/float(numSteps);
   
-  // set band colors
-  bandColors = new color[numBands];
-  for( int i = 0 ; i < numBands ; i++ ) {
-    float h = 120+360*( float(i) / float(numBands) );
-    bandColors[i] = hsbColor( h , 0.75 , 1 );
-  }
+
   
   // build IntLists of pixel values from 0-45 degrees and not in clock radius
   // also, determine how many pixels are to be rendered
@@ -142,11 +125,10 @@ void setup() {
     posX[i] = r*cos(a);
     posY[i] = r*sin(a);
     buf[i] = color(0, 0, 0);
-    prevBand[i] = numBands;
-    val0[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t );
-    val1[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t + dt );
+    prevBand[i] = C.numBands;
+    val0[i] = noise( C.bgDetail*posX[i] , C.bgDetail*posY[i] , t );
+    val1[i] = noise( C.bgDetail*posX[i] , C.bgDetail*posY[i] , t + C.bgSpeed );
   }
-  println(bandStart.length );
 }
 
 void draw() {
@@ -154,75 +136,43 @@ void draw() {
   // load pixels for rendering
   loadPixels();
   
-  if( colorBands ) {
-    for ( int i = 0; i < numPixels; i++ ) {
-      int x = pixelX[i];
-      int y = pixelY[i];
-      
-      float f = lerp( val0[i] , val1[i] , float(stepCounter)*oneOverNumSteps ) ;
-      color c = color(0);
-      
-      int newBand = numBands;
-      for( int b = 0 ; b < numBands ; b++ ) {
-        if ( f > bandStart[b] && f < bandStart[b] + bandWidth ) {
-          c = bandColors[b];
-          newBand = b;
-        }
-      }
-      if( newBand != prevBand[i] ) {
-        prevBand[i] = newBand;
-        pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
-        pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
-        pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
-        pixels[ (halfWidth-x) + (halfHeight-y)*width ] = c;
-        if ( x < halfHeight ) {
-          pixels[ (halfWidth+y) + (halfHeight+x)*width ] = c;
-          pixels[ (halfWidth+y) + (halfHeight-x)*width ] = c;
-          pixels[ (halfWidth-y) + (halfHeight+x)*width ] = c;
-          pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
-        }
-      }
+  for ( int i = 0; i < numPixels; i++ ) {
+    int x = pixelX[i];
+    int y = pixelY[i];
+    
+    float f = lerp( val0[i] , val1[i] , float(stepCounter)*oneOverNumSteps ) ;
+    color c = C.bgColor;
+    
+    int newBand = C.whichBand( f );
+    if( newBand < C.numBands ) {
+      c = C.Settings[C.currentSetting].Bands[newBand].bandColor;
     }
-  } else {
-    for ( int i = 0; i < numPixels; i++ ) {
-      int x = pixelX[i];
-      int y = pixelY[i];
-      
-      float f = lerp( val0[i] , val1[i] , float(stepCounter)*oneOverNumSteps ) ;
-      color c = color(0);
-      
-      int newBand = numBands;
-      for( int b = 0 ; b < numBands ; b++ ) {
-        if ( f > bandStart[b] && f < bandStart[b] + bandWidth ) {
-          c = color(255,255,255);
-          newBand = b;
-        }
-      }
-      if( newBand != prevBand[i] ) {
-        prevBand[i] = newBand;
-        pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
-        pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
-        pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
-        pixels[ (halfWidth-x) + (halfHeight-y)*width ] = c;
-        if ( x < halfHeight ) {
-          pixels[ (halfWidth+y) + (halfHeight+x)*width ] = c;
-          pixels[ (halfWidth+y) + (halfHeight-x)*width ] = c;
-          pixels[ (halfWidth-y) + (halfHeight+x)*width ] = c;
-          pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
-        }
+    
+    if( newBand != prevBand[i] ) {
+      prevBand[i] = newBand;
+      pixels[ (halfWidth+x) + (halfHeight+y)*width ] = c;
+      pixels[ (halfWidth+x) + (halfHeight-y)*width ] = c;
+      pixels[ (halfWidth-x) + (halfHeight+y)*width ] = c;
+      pixels[ (halfWidth-x) + (halfHeight-y)*width ] = c;
+      if ( x < halfHeight ) {
+        pixels[ (halfWidth+y) + (halfHeight+x)*width ] = c;
+        pixels[ (halfWidth+y) + (halfHeight-x)*width ] = c;
+        pixels[ (halfWidth-y) + (halfHeight+x)*width ] = c;
+        pixels[ (halfWidth-y) + (halfHeight-x)*width ] = c;
       }
     }
   }
+  
   updatePixels();
   
   for( int i = stepCounter*pixPerStep ; i <  (stepCounter+1)*pixPerStep && i < numPixels ; i++ ) {
-    val2[i] = noise( bgDetail*posX[i] , bgDetail*posY[i] , t + dt );
+    val2[i] = noise( C.bgDetail*posX[i] , C.bgDetail*posY[i] , t + C.bgSpeed );
   }
   
   stepCounter++;
   if( stepCounter > numSteps ) { 
     stepCounter = 0; 
-    t += dt;
+    t += C.bgSpeed;
     for( int i = 0 ; i < numPixels ; i++ ) {
       val0[i] = val1[i];
       val1[i] = val2[i];
@@ -232,14 +182,18 @@ void draw() {
   // clock stuff
   if( millis() > nextSecond ) {
     nextSecond += 1000;
-    fill(0,0,0);
-    ellipse( 0.5*width , 0.5*height , 2*clockRadius , 2*clockRadius );
+    fill( C.bgColor );
+    stroke( C.bgColor );
+    strokeWeight(1);
+    ellipse( 0.5*width , 0.5*height , 2.0*clockRadius , 2.0*clockRadius );
     float minAng = TWO_PI * (float(minute())+float(second())/60)/60;
     float hourAng = TWO_PI * (float(hour()%12)+float(minute())/60)/12;
     translate( 0.5*width, 0.5*height );
-    stroke( 255, 255, 255, 255 );
-    fill(0,0,0,128);
+    //stroke( 255, 255, 255, 255 );
+    //fill(0,0,0,128);
     strokeWeight(clockStrokeWeight);
+    fill( C.handsFill );
+    stroke( C.handsStroke );
     pushMatrix();
     rotate( PI+minAng );
     rect( -0.5*minuteWidth, -backEnd, minuteWidth, minuteLength + backEnd, cornerRadius, cornerRadius, cornerRadius, cornerRadius );
@@ -263,7 +217,14 @@ void draw() {
 void mousePressed() {
   mousePressTime = millis();
   mousePressFlag = true;
-  colorBands = !colorBands;
+  if( mouseX > 0.5*width ) {
+    C.nextSetting();
+  } else {
+    C.prevSetting();
+  }
+  for ( int i = 0; i < numPixels; i++ ) {
+    prevBand[i] = -1;
+  }
 }
 
 void mouseReleased() {
