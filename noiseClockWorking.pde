@@ -68,7 +68,7 @@ int mousePressTime = 0;
 int mousePressTimeOut = 4000;
 
 void setup() {
-  // frameRate( 25 );
+  //  /frameRate( 25 );
   size( 800 , 480 );
   halfWidth = width / 2;
   halfHeight = height / 2;
